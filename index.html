@@ -4,43 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>T1 Zone Handoff Checklist</title>
-    <style>
-/* font info */
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 0 auto; 
-            padding: 20px; 
-        }
- /* checkbox stlye */
-        .checkbox-group { margin-bottom: 10px; }
-/* textarea style */
-        input[type="number"] { width: 50px; }
-        textarea { width: 100%; height: 60px; }
-/* button style */        
-        <!-- -->
-        .button-group {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-/* button hover */
-        button:hover {
-            background-color: #0056b3;
-        }
-/* print style */
-        @media print {
-            button { display: none; }
-        }
-    </style>
+    <!-- External Libraries for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+    /* font info */
+            body { 
+                font-family: Arial, sans-serif; 
+                max-width: 600px; 
+                margin: 0 auto; 
+                padding: 20px; 
+            }
+    /* checkbox stlye */
+            .checkbox-group { margin-bottom: 10px; }
+    /* textarea style */
+            input[type="number"] { width: 50px; }
+            textarea { width: 100%; height: 60px; }
+    /* button style */        
+            <!-- -->
+            .button-group {
+                margin-top: 20px;
+                display: flex;
+                justify-content: space-between;
+            }
+            button {
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+    /* button hover */
+            button:hover {
+                background-color: #0056b3;
+            }
+    /* print style */
+            @media print {
+                button { display: none; }
+            }
+</style>
 
 </head>
 <body>
@@ -178,30 +181,40 @@ document.getElementById('keepClearImage').addEventListener('change', (e) =>
     handleImageUpload(e, 'keepClearPreview'));
 document.getElementById('fiveSImage').addEventListener('change', (e) => 
     handleImageUpload(e, 'fiveSPreview'));
-// To pdf
-    function printToPDF() {
-        window.print();
-    }
 
-    function handleImageUpload(event, previewId) {
-        const file = event.target.files[0];
-        const preview = document.getElementById(previewId);
-        
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
+    //print to pdf 
+    function printToPDF() {
+    // Store buttons and file inputs
+    const buttons = document.querySelectorAll('.button-group');
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    
+    // Check if it's a mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        // Mobile device handling
+            alert("To save as PDF:\n1. Take a screenshot of the form\n2. Or use your browser's 'Share' button\n3. Select 'Print' or 'Save as PDF' option");
+            
+            //Add share functionality
+            if (navigator.share) {
+                navigator.share({
+                    title: 'T1 Zone Handoff Checklist',
+                    text: 'Handoff Checklist Documentation',
+                    url: window.location.href
+                }).catch(console.error);
             }
-            reader.readAsDataURL(file);
+        } else {
+            // Desktop handling
+            buttons.forEach(el => el.style.display = 'none');
+            fileInputs.forEach(el => el.style.display = 'none');
+            
+            window.print();
+            
+            setTimeout(() => {
+                buttons.forEach(el => el.style.display = 'block');
+                fileInputs.forEach(el => el.style.display = 'block');
+            }, 1000);
         }
-    }
-
-    // Modified printToPDF function
-    function printToPDF() {
-        document.querySelectorAll('input[type="file"]').forEach(el => el.style.display = 'none');
-        window.print();
-        document.querySelectorAll('input[type="file"]').forEach(el => el.style.display = 'block');
     }
 
     // DateTime functions
@@ -235,31 +248,31 @@ document.getElementById('fiveSImage').addEventListener('change', (e) =>
 
         // Create email body
         const emailBody = `
-T1 Zone Handoff Report
+            T1 Zone Handoff Report
 
-Shift: ${shift}
-Date/Time: ${dateTime}
+            Shift: ${shift}
+            Date/Time: ${dateTime}
 
-Safety & Compliance Check:
-- Keep Clear zones unobstructed: ${clearZones}
-- Totes within 5S zones: ${totesInZone}
+            Safety & Compliance Check:
+            - Keep Clear zones unobstructed: ${clearZones}
+            - Totes within 5S zones: ${totesInZone}
 
-Problems/Barriers encountered:
-${problems}
+            Problems/Barriers encountered:
+            ${problems}
 
-Action items for next shift:
-${actions}
+            Action items for next shift:
+            ${actions}
 
-Signed off by: ${signOff}
-`;
+            Signed off by: ${signOff}
+            `;
 
         // Create and trigger mailto link
-        window.location.href = `mailto:bridgcou@amazon.com?subject=T1 Zone Handoff Report - ${shift}&body=${encodeURIComponent(emailBody)}`;
-    };
+            window.location.href = `mailto:bridgcou@amazon.com?subject=T1 Zone Handoff Report - ${shift}&body=${encodeURIComponent(emailBody)}`;
+        };
 
-    // Initialize datetime
-    window.onload = updateDateTime;
-    setInterval(updateDateTime, 60000);
+        // Initialize datetime
+        window.onload = updateDateTime;
+        setInterval(updateDateTime, 60000);
 
 </script>
 </body>
