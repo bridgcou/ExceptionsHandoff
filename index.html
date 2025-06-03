@@ -7,6 +7,8 @@
     <!-- External Libraries for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!--mobile ss script-->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
 <style>
     /* font info */
             body { 
@@ -35,6 +37,17 @@
                 border-radius: 4px;
                 cursor: pointer;
             }
+    /* mobile button */ 
+            body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .mobile-save-button {
+            text-decoration: none;
+            color: inherit;
+        }
     /* button hover */
             button:hover {
                 background-color: #0056b3;
@@ -44,7 +57,6 @@
                 button { display: none; }
             }
 </style>
-
 </head>
 <body>
 
@@ -152,37 +164,62 @@
         <div>
             <label for="date-time">Date/Time:</label>
             <input type="datetime-local" id="date-time" name="date-time">
-        </div>
-        
+        </div> 
+    <!-- Button for mobile + pdf-->
         <div class="button-group">
-            <button type="submit">Submit & Email Form</button>
-            <button type="button" onclick="printToPDF()">Export as PDF</button>
-        </div>
+        <button type="button" onclick="saveToImages()">Save to Images (mobile)</button>
+        <button type="button" onclick="printToPDF()">Export as PDF (laptop)</button>
+    </div>
     </form>
 
+
     <script>
-//Add file function
-    function handleImageUpload(event, previewId) {
-    const file = event.target.files[0];
-    const preview = document.getElementById(previewId);
-    
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
+    //Upload a file function
+        function handleImageUpload(event, previewId) {
+        const file = event.target.files[0];
+        const preview = document.getElementById(previewId);
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
         }
-        reader.readAsDataURL(file);
     }
-}
 
-// Add event listener for image upload
-document.getElementById('keepClearImage').addEventListener('change', (e) => 
-    handleImageUpload(e, 'keepClearPreview'));
-document.getElementById('fiveSImage').addEventListener('change', (e) => 
-    handleImageUpload(e, 'fiveSPreview'));
+    // Add event listener for image upload
+    document.getElementById('keepClearImage').addEventListener('change', (e) => 
+        handleImageUpload(e, 'keepClearPreview'));
+    document.getElementById('fiveSImage').addEventListener('change', (e) => 
+        handleImageUpload(e, 'fiveSPreview'));
 
-    //print to pdf 
+
+// Mobile save to images
+    function saveToImages() {
+            // Hide buttons and inputs temporarily
+            const buttons = document.querySelectorAll('.button-group');
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            buttons.forEach(el => el.style.display = 'none');
+            fileInputs.forEach(el => el.style.display = 'none');
+
+            // Take screenshot and create download
+            html2canvas(document.body).then(canvas => {
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = 'T1_Handoff.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Show elements again
+                buttons.forEach(el => el.style.display = 'block');
+                fileInputs.forEach(el => el.style.display = 'block');
+            });
+        }
+//print to pdf 
     function printToPDF() {
     // Store buttons and file inputs
     const buttons = document.querySelectorAll('.button-group');
@@ -190,7 +227,6 @@ document.getElementById('fiveSImage').addEventListener('change', (e) =>
     
     // Check if it's a mobile device
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
     if (isMobile) {
         // Mobile device handling
             alert("To save as PDF:\n1. Take a screenshot of the form\n2. Or use your browser's 'Share' button\n3. Select 'Print' or 'Save as PDF' option");
@@ -204,20 +240,20 @@ document.getElementById('fiveSImage').addEventListener('change', (e) =>
                 }).catch(console.error);
             }
         } else {
-            // Desktop handling
-            buttons.forEach(el => el.style.display = 'none');
-            fileInputs.forEach(el => el.style.display = 'none');
-            
-            window.print();
-            
-            setTimeout(() => {
-                buttons.forEach(el => el.style.display = 'block');
-                fileInputs.forEach(el => el.style.display = 'block');
-            }, 1000);
-        }
+    // Desktop handling
+    buttons.forEach(el => el.style.display = 'none');
+    fileInputs.forEach(el => el.style.display = 'none');
+    
+    window.print();
+    
+    setTimeout(() => {
+        buttons.forEach(el => el.style.display = 'block');
+        fileInputs.forEach(el => el.style.display = 'block');
+    }, 1000);
+    }
     }
 
-    // DateTime functions
+// DateTime functions
     function updateDateTime() {
         const now = new Date();
         const est = now.toLocaleString("en-US", {timeZone: "America/New_York"});
